@@ -1,0 +1,25 @@
+{
+"schemaVersion": 1,
+"id": "seedhop",
+"name": "SeedHop",
+"version": "1.0.0",
+"description": "Viaja entre semillas locales usando direcciones de servidores virtuales con persistencia de inventario.",
+"authors": [
+"TuNombreOApodo"
+],
+"contact": {
+"homepage": "https://github.com/"
+},
+"license": "MIT",
+"environment": "*",
+"entrypoints": {
+"main": [
+"com.deathban.seedhop.SeedHop"
+]
+},
+"depends": {
+"fabricloader": ">=0.15.0",
+"minecraft": "~1.21",
+"java": ">=21"
+}
+}
