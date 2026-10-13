@@ -1,0 +1,31 @@
+name: Compilar SeedHop
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Descargar Plantilla de Compilacion
+        run: |
+          git clone https://github.com plantilla
+          cp -r src plantilla/ || true
+          cd plantilla
+          chmod +x gradlew
+          ./gradlew build
+
+      - name: Guardar Mod Terminado (.JAR)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SeedHop-Mod
+          path: |
+            plantilla/build/libs/*.jar
+            build/libs/*.jar
