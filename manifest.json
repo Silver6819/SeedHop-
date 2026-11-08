@@ -1,0 +1,66 @@
+import { world, system, ItemStack } from "@minecraft/server";
+
+// 1. CARGAR DATOS AL ENTRAR AL MUNDO
+world.afterEvents.playerSpawn.subscribe((event) => {
+    const player = event.player;
+    const datosGuardados = player.getDynamicProperty("seedhop:inventory_data");
+    
+    if (datosGuardados) {
+        try {
+            const datos = JSON.parse(datosGuardados);
+            
+            // Cargar niveles de Experiencia
+            player.level = datos.xp;
+            
+            // Cargar Items del Inventario Principal
+            const inventory = player.getComponent("minecraft:inventory").container;
+            inventory.clearAll();
+            
+            datos.items.forEach(itemInfo => {
+                if (itemInfo) {
+                    // En las APIs modernas de Bedrock se pasa el tipo de item directamente
+                    const itemStack = new ItemStack(itemInfo.id, itemInfo.amount);
+                    inventory.setItem(itemInfo.slot, itemStack);
+                }
+            });
+            
+            player.sendMessage(`§a[SeedHop] ¡Tu inventario y ${datos.xp} niveles de XP han sido sincronizados!`);
+        } catch (e) {
+            console.warn("Error SeedHop al cargar: " + e);
+        }
+    } else {
+        player.sendMessage("§b[SeedHop] Mod Comercial Activo. Tu progreso se guardará automáticamente.");
+    }
+});
+
+// 2. FUNCIÓN GLOBAL PARA GUARDAR PROGRESO
+function guardarProgresoCompleto(player) {
+    const inventory = player.getComponent("minecraft:inventory").container;
+    const itemsGuardados = [];
+    
+    for (let i = 0; i < inventory.size; i++) {
+        const item = inventory.getItem(i);
+        if (item) {
+            itemsGuardados.push({
+                slot: i,
+                id: item.typeId,
+                amount: item.amount
+            });
+        }
+    }
+    
+    const datosEstructurados = {
+        xp: player.level,
+        items: itemsGuardados,
+        time: Date.now()
+    };
+    
+    player.setDynamicProperty("seedhop:inventory_data", JSON.stringify(datosEstructurados));
+}
+
+// 3. AUTO-GUARDADO (Cada 20 segundos)
+system.runInterval(() => {
+    for (const player of world.getAllPlayers()) {
+        guardarProgresoCompleto(player);
+    }
+}, 400);
